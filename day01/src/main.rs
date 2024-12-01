@@ -5,7 +5,7 @@ use regex::Regex;
 use std::{collections::HashMap, error::Error, sync::OnceLock};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = include_str!("../input/day_1_actual.txt");
+    let input = include_str!("../input/actual.txt");
     print_results(1, part_1(input), part_2(input));
     Ok(())
 }
@@ -67,7 +67,7 @@ mod day_1_tests {
 
     fn get_input() -> &'static str {
         static INPUT: OnceLock<&'static str> = OnceLock::new();
-        INPUT.get_or_init(|| include_str!("../input/day_1_test.txt"))
+        INPUT.get_or_init(|| include_str!("../input/test.txt"))
     }
 
     #[test]
