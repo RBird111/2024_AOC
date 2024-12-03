@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+
+use v5.40;
+
+use IPC::System::Simple qw< capturex >;
+
+chomp( my @bins = grep { /^day/ } ( capturex 'ls' ) );
+
+chomp( my $out = join '',
+    map { capturex 'cargo', 'run', '--color=always', '-q', "--bin=$_" } @bins );
+
+print $out, "\n";

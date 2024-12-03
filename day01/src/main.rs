@@ -6,7 +6,7 @@ use std::{collections::HashMap, error::Error, sync::OnceLock};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = include_str!("../input/actual.txt");
-    print_results(1, part_1(input), part_2(input));
+    print_results(1, &[part_1(input), part_2(input)]);
     Ok(())
 }
 
@@ -62,7 +62,7 @@ fn get_part_1_re() -> &'static Regex {
 }
 
 #[cfg(test)]
-mod day_1_tests {
+mod day01_tests {
     use super::*;
 
     fn get_input() -> &'static str {
