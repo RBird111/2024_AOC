@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use v5.40;
+use v5.38;
 
 use IPC::System::Simple qw< capturex >;
 
