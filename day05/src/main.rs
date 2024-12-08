@@ -20,6 +20,24 @@ fn part_1((map, updates): &(HashMap<i32, HashSet<i32>>, Vec<Vec<i32>>)) -> i32 {
 }
 
 fn part_2((map, updates): &(HashMap<i32, HashSet<i32>>, Vec<Vec<i32>>)) -> i32 {
+    let make_valid = |update: &Vec<i32>| {
+        let mut update = update.to_owned();
+        while let Some(i) = update[..update.len() - 1]
+            .iter()
+            .enumerate()
+            .position(|(i, b)| map.get(b).is_some_and(|set| set.contains(&update[i + 1])))
+        {
+            update.swap(i, i + 1);
+        }
+        update
+    };
+
+    updates
+        .iter()
+        .filter(|update| !is_valid_update(update, map))
+        .map(make_valid)
+        .map(|update| update[update.len() / 2])
+        .sum()
 }
 
 fn is_valid_update(update: &[i32], map: &HashMap<i32, HashSet<i32>>) -> bool {
