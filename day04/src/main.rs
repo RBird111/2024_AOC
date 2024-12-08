@@ -22,15 +22,13 @@ fn part_2(data: &str) -> i32 {
     (0..grid.len())
         .flat_map(|x| (0..grid[0].len()).map(move |y| (x, y)))
         .filter(|&(x, y)| grid[x][y] == b'A')
-        .filter_map(|(x, y)| is_x_mas((x, y), &grid))
-        .sum()
+        .filter(|&loc| is_x_mas(loc, &grid))
+        .count() as _
 }
 
 fn into_grid(data: &str) -> Vec<Vec<u8>> {
     data.lines().map(str::as_bytes).map(Vec::from).collect()
 }
-
-const XMAS: [u8; 4] = [b'X', b'M', b'A', b'S'];
 
 fn count_xmas((x, y): (usize, usize), grid: &[Vec<u8>]) -> i32 {
     (-1..=1)
@@ -41,14 +39,9 @@ fn count_xmas((x, y): (usize, usize), grid: &[Vec<u8>]) -> i32 {
 }
 
 fn is_xmas((x, y): (usize, usize), (dx, dy): (i32, i32), grid: &[Vec<u8>]) -> bool {
+    const XMAS: [u8; 4] = [b'X', b'M', b'A', b'S'];
+
     let get_mod = |diff: i32| (diff.abs() == 1) as usize;
-    let get_check = |diff: i32| {
-        if diff < 0 {
-            usize::checked_sub
-        } else {
-            usize::checked_add
-        }
-    };
 
     let mut iter = XMAS.iter().skip(1).peekable();
     let (xmod, ymod) = (get_mod(dx), get_mod(dy));
@@ -68,41 +61,37 @@ fn is_xmas((x, y): (usize, usize), (dx, dy): (i32, i32), grid: &[Vec<u8>]) -> bo
     false
 }
 
-fn is_x_mas((x, y): (usize, usize), grid: &[Vec<u8>]) -> Option<i32> {
-    // TODO: Refactor
+fn is_x_mas((x, y): (usize, usize), grid: &[Vec<u8>]) -> bool {
+    const DIFFS: [i32; 2] = [1, -1]; // [checked_add, checked_sub]
 
-    let get_loc = |(x, y): (usize, usize)| grid.get(x).and_then(|row| row.get(y));
+    let get_loc = |(x, y): (usize, usize)| grid.get(x).and_then(|row| row.get(y)).copied();
+    let get_val = |(x_diff, y_diff): (i32, i32)| {
+        get_check(x_diff)(x, 1)
+            .and_then(|dx| Some((dx, get_check(y_diff)(y, 1)?)))
+            .and_then(get_loc)
+    };
 
-    // get bot-left
-    let bot_left = x
-        .checked_add(1)
-        .and_then(|dx| Some((dx, y.checked_sub(1)?)))
-        .and_then(get_loc)?;
+    let [bot_right, bot_left, top_right, top_left] = DIFFS
+        .into_iter()
+        .flat_map(|x_diff| DIFFS.into_iter().map(move |y_diff| (x_diff, y_diff)))
+        .filter_map(get_val)
+        .collect::<Vec<_>>()[..]
+    else {
+        return false;
+    };
 
-    // get top-left
-    let top_left = x
-        .checked_sub(1)
-        .and_then(|dx| Some((dx, y.checked_sub(1)?)))
-        .and_then(get_loc)?;
+    const PERMS: [(u8, u8); 2] = [(b'M', b'S'), (b'S', b'M')];
+    PERMS
+        .into_iter()
+        .flat_map(|x| PERMS.into_iter().map(move |y| (x, y)))
+        .any(|v| v == ((bot_left, top_right), (top_left, bot_right)))
+}
 
-    // get bot-right
-    let bot_right = x
-        .checked_add(1)
-        .and_then(|dx| Some((dx, y.checked_add(1)?)))
-        .and_then(get_loc)?;
-
-    // get top-right
-    let top_right = x
-        .checked_sub(1)
-        .and_then(|dx| Some((dx, y.checked_add(1)?)))
-        .and_then(get_loc)?;
-
-    match ((&bot_left, &top_right), (&top_left, &bot_right)) {
-        ((b'M', b'S'), (b'M', b'S'))
-        | ((b'S', b'M'), (b'M', b'S'))
-        | ((b'S', b'M'), (b'S', b'M'))
-        | ((b'M', b'S'), (b'S', b'M')) => Some(1),
-        _ => None,
+fn get_check(diff: i32) -> fn(usize, usize) -> Option<usize> {
+    if diff < 0 {
+        usize::checked_sub
+    } else {
+        usize::checked_add
     }
 }
 
