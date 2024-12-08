@@ -18,6 +18,12 @@ fn part_1(data: &str) -> i32 {
 }
 
 fn part_2(data: &str) -> i32 {
+    let grid = into_grid(data);
+    (0..grid.len())
+        .flat_map(|x| (0..grid[0].len()).map(move |y| (x, y)))
+        .filter(|&(x, y)| grid[x][y] == b'A')
+        .filter_map(|(x, y)| is_x_mas((x, y), &grid))
+        .sum()
 }
 
 fn into_grid(data: &str) -> Vec<Vec<u8>> {
@@ -62,6 +68,44 @@ fn is_xmas((x, y): (usize, usize), (dx, dy): (i32, i32), grid: &[Vec<u8>]) -> bo
     false
 }
 
+fn is_x_mas((x, y): (usize, usize), grid: &[Vec<u8>]) -> Option<i32> {
+    // TODO: Refactor
+
+    let get_loc = |(x, y): (usize, usize)| grid.get(x).and_then(|row| row.get(y));
+
+    // get bot-left
+    let bot_left = x
+        .checked_add(1)
+        .and_then(|dx| Some((dx, y.checked_sub(1)?)))
+        .and_then(get_loc)?;
+
+    // get top-left
+    let top_left = x
+        .checked_sub(1)
+        .and_then(|dx| Some((dx, y.checked_sub(1)?)))
+        .and_then(get_loc)?;
+
+    // get bot-right
+    let bot_right = x
+        .checked_add(1)
+        .and_then(|dx| Some((dx, y.checked_add(1)?)))
+        .and_then(get_loc)?;
+
+    // get top-right
+    let top_right = x
+        .checked_sub(1)
+        .and_then(|dx| Some((dx, y.checked_add(1)?)))
+        .and_then(get_loc)?;
+
+    match ((&bot_left, &top_right), (&top_left, &bot_right)) {
+        ((b'M', b'S'), (b'M', b'S'))
+        | ((b'S', b'M'), (b'M', b'S'))
+        | ((b'S', b'M'), (b'S', b'M'))
+        | ((b'M', b'S'), (b'S', b'M')) => Some(1),
+        _ => None,
+    }
+}
+
 #[cfg(test)]
 mod day04_tests {
     use super::*;
@@ -78,5 +122,11 @@ mod day04_tests {
 
     #[test]
     fn part_2_test() {
+        let expected: i32 = 9;
+        let actual: i32 = part_2(include_str!("../input/test.txt"));
+        assert_eq!(
+            actual, expected,
+            "actual ({actual}) != expected ({expected})",
+        )
     }
 }
