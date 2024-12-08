@@ -6,7 +6,7 @@ use std::{error::Error, sync::OnceLock};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = include_str!("../input/actual.txt");
-    print_results(2, &[part_1(input), part_2(input)]);
+    print_results(3, &[part_1(input), part_2(input)]);
     Ok(())
 }
 
