@@ -14,6 +14,16 @@ fn part_1(data: Vec<Vec<u8>>) -> i32 {
 }
 
 fn part_2(data: Vec<Vec<u8>>) -> i32 {
+    (0..data.len())
+        .flat_map(|x| (0..data[0].len()).map(move |y| (x, y)))
+        .filter(|&(x, y)| ![b'#', b'^'].contains(&data[x][y]))
+        .filter(|&(x, y)| {
+            let mut clone = data.to_owned();
+            clone[x][y] = b'#';
+            let (_, is_loop) = mark_grid(clone);
+            is_loop
+        })
+        .count() as _
 }
 
 fn mark_grid(mut grid: Vec<Vec<u8>>) -> (Vec<Vec<u8>>, bool) {
