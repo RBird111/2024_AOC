@@ -18,11 +18,19 @@ fn part_1(data: &str) -> i64 {
 }
 
 fn part_2(data: &str) -> i64 {
+    const OPS: [Operation; 3] = [Operation::Add, Operation::Mul, Operation::Con];
+    data.lines()
+        .map(Equation::new)
+        .filter(|eq| eq.is_valid(&OPS))
+        .map(|eq| eq.result)
+        .sum()
+}
 
 #[derive(Debug, Clone, Copy)]
 enum Operation {
     Add,
     Mul,
+    Con,
 }
 
 impl Operation {
@@ -31,6 +39,14 @@ impl Operation {
         match self {
             Add => a + b,
             Mul => a * b,
+            Con => {
+                let (mut v, mut len) = (b, 0);
+                while v > 0 {
+                    len += 1;
+                    v /= 10;
+                }
+                a * 10i64.pow(len) + b
+            }
         }
     }
 }
