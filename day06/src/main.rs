@@ -1,6 +1,6 @@
 use helpers::print_results;
 
-use std::{collections::HashSet, error::Error};
+use std::{collections::HashSet, error::Error, thread};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = parse_input(include_str!("../input/actual.txt"));
@@ -9,20 +9,30 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn part_1(data: Vec<Vec<u8>>) -> i32 {
-    let (grid, _) = mark_grid(data);
-    grid.into_iter().flatten().filter(|&b| b == b'X').count() as _
+    mark_grid(data)
+        .0
+        .into_iter()
+        .flatten()
+        .filter(|&b| b == b'X')
+        .count() as _
 }
 
 fn part_2(data: Vec<Vec<u8>>) -> i32 {
-    (0..data.len())
+    let handles: Vec<_> = (0..data.len())
         .flat_map(|x| (0..data[0].len()).map(move |y| (x, y)))
         .filter(|&(x, y)| ![b'#', b'^'].contains(&data[x][y]))
-        .filter(|&(x, y)| {
+        .map(|(x, y)| {
             let mut clone = data.to_owned();
-            clone[x][y] = b'#';
-            let (_, is_loop) = mark_grid(clone);
-            is_loop
+            thread::spawn(move || {
+                clone[x][y] = b'#';
+                mark_grid(clone).1
+            })
         })
+        .collect();
+    handles
+        .into_iter()
+        .filter_map(|handle| handle.join().ok())
+        .filter(|&t| t)
         .count() as _
 }
 
