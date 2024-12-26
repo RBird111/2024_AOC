@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := all
 
-.PHONY: all run
+.PHONY: all run test
 
 all:
 	for day in day*; do \
@@ -9,3 +9,6 @@ all:
 
 run:
 	cargo run -rq --bin=day$(day)
+
+test:
+	cargo test
