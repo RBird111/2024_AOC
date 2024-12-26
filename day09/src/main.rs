@@ -26,6 +26,31 @@ fn part_1(mut input: Vec<i64>) -> i64 {
 }
 
 fn part_2(input: Vec<i64>) -> i64 {
+    let mut dir = File::from_vec(input);
+    let mut r = dir.len();
+
+    loop {
+        r = match dir[..r].iter().rposition(|f| f.val != -1) {
+            Some(j) => j,
+            None => break,
+        };
+        if let Some(l) = dir
+            .iter()
+            .zip(0..)
+            .position(|(f, l)| l < r && f.val == -1 && f.size >= dir[r].size)
+        {
+            dir[l].size -= dir[r].size;
+            dir.insert(l, dir[r]);
+            r = (r + 1).min(dir.len() - 1);
+            dir[r].val = -1;
+        }
+    }
+
+    dir.into_iter()
+        .flat_map(|f| vec![f.val.max(0); f.size])
+        .zip(0..)
+        .map(|(b, i)| b * i)
+        .sum()
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
