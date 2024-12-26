@@ -43,6 +43,49 @@ fn part_1(data: &str) -> i64 {
 }
 
 fn part_2(data: &str) -> i64 {
+    let parsed: Vec<Vec<u8>> = data.lines().map(|l| l.bytes().collect()).collect();
+    let (rows, cols) = (parsed.len() as i32, parsed[0].len() as i32);
+
+    let mut map: HashMap<u8, Vec<(i32, i32)>> = HashMap::new();
+    parsed
+        .into_iter()
+        .enumerate()
+        .flat_map(|(r, line)| {
+            line.into_iter()
+                .enumerate()
+                .filter(|(_, val)| *val != b'.')
+                .map(move |(c, val)| (r as i32, c as i32, val))
+        })
+        .for_each(|(r, c, val)| {
+            map.entry(val).or_default().push((r, c));
+        });
+
+    let mut set: HashSet<(i32, i32)> = HashSet::new();
+    let get_points = |arr: &[(i32, i32)], (r, c): (i32, i32)| {
+        arr.iter()
+            .cycle()
+            .scan(-1, |i, (dx, dy)| {
+                *i += 1;
+                Some((r + *i * dx, c + *i * dy))
+            })
+            .take_while(|&(r, c)| 0 <= r && r < rows && 0 <= c && c < cols)
+            .collect::<Vec<_>>()
+    };
+    map.into_values().for_each(|locs| {
+        set.extend(locs.iter().enumerate().flat_map(|(i, &(r1, c1))| {
+            let (up, down) = (
+                locs[i + 1..]
+                    .iter()
+                    .flat_map(move |(r2, c2)| get_points(&[(r1 - r2, c1 - c2)], (r1, c1))),
+                locs[i + 1..]
+                    .iter()
+                    .flat_map(move |(r2, c2)| get_points(&[(r2 - r1, c2 - c1)], (r1, c1))),
+            );
+            up.chain(down)
+        }));
+    });
+
+    set.len() as _
 }
 
 #[cfg(test)]
