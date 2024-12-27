@@ -4,11 +4,11 @@
 
 all:
 	for day in day*; do \
-		cargo run -rq --bin=$$day ; \
+		cargo run --release --quiet --bin=$$day ; \
 	done
 
 run:
-	cargo run -rq --bin=day$(day)
+	cargo run --release --quiet --bin=day$(day)
 
 test:
 	cargo test
