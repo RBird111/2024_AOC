@@ -130,7 +130,7 @@ impl Trail {
 }
 
 #[cfg(test)]
-mod day08_tests {
+mod day10_tests {
     use super::*;
 
     #[test]
