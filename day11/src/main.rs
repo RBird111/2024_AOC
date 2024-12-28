@@ -13,6 +13,7 @@ fn part_1(data: &str) -> i64 {
 }
 
 fn part_2(data: &str) -> i64 {
+    total_stones(data, 75)
 }
 
 fn total_stones(data: &str, blinks: usize) -> i64 {
