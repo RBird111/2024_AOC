@@ -25,6 +25,16 @@ fn part_1(data: &str) -> i64 {
 }
 
 fn part_2(data: &str) -> i64 {
+    let (mut price, mut visited, garden) = (0, HashSet::new(), Garden::new(data));
+    for loc in (0..garden.rows).flat_map(|row| (0..garden.cols).map(move |col| (row, col))) {
+        if visited.insert(loc) {
+            if let Some(region) = Region::map_region(loc, &garden) {
+                price += region.price_per_side();
+                visited.extend(region.locations);
+            };
+        }
+    }
+    price
 }
 
 struct Region {
@@ -65,8 +75,32 @@ impl Region {
         Some(region)
     }
 
+    fn count_sides(&self) -> i64 {
+        const OFFSETS: [(i32, i32); 4] = [(1, 1), (1, -1), (-1, 1), (-1, -1)];
+
+        self.locations
+            .iter()
+            .flat_map(|&(x, y)| {
+                OFFSETS
+                    .into_iter()
+                    .map(move |(dx, dy)| ((x + dx, y), (x, y + dy), (x + dx, y + dy)))
+                    .map(|(row, col, diag)| {
+                        (!self.locations.contains(&row) && !self.locations.contains(&col)) as i64
+                            + (self.locations.contains(&row)
+                                && self.locations.contains(&col)
+                                && !self.locations.contains(&diag))
+                                as i64
+                    })
+            })
+            .sum()
+    }
+
     fn price_per_perimiter(&self) -> i64 {
         self.perimiter * self.area
+    }
+
+    fn price_per_side(&self) -> i64 {
+        self.area * self.count_sides()
     }
 }
 
