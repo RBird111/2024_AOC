@@ -19,6 +19,12 @@ fn part_1(data: &str) -> i64 {
 }
 
 fn part_2(data: &str) -> i64 {
+    ClawMachine::from_input(data)
+        .into_iter()
+        .map(|claw| claw.inc_prize(1e13 as i64))
+        .filter_map(ClawMachine::find_intersection)
+        .map(|(a, b)| 3 * a + b)
+        .sum()
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -57,6 +63,13 @@ Prize: X=(?<px>\d+), Y=(?<py>\d+)";
             button_b: (vals[2], vals[3]),
             prize: (vals[4], vals[5]),
         }
+    }
+
+    fn inc_prize(&self, amount: i64) -> Self {
+        let mut new = *self;
+        new.prize.0 += amount;
+        new.prize.1 += amount;
+        new
     }
 
     fn find_intersection(self) -> Option<(i64, i64)> {
